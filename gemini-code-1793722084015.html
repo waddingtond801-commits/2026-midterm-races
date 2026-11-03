@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 U.S. Senate & Gubernatorial Elections Interactive Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Color Variables & Theme System */
+    :root[data-theme="dark"] {
+      --bg-color: #0b0f19;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0b0f19 70%);
+      --card-bg: rgba(17, 24, 39, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-dem: #3b82f6;
+      --accent-gop: #ef4444;
+      --accent-tossup: #f59e0b;
+      --glow-dem: rgba(59, 130, 246, 0.25);
+      --glow-gop: rgba(239, 68, 68, 0.25);
+      --badge-bg: rgba(99, 102, 241, 0.15);
+      --badge-text: #818cf8;
+      --header-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    :root[data-theme="light"] {
+      --bg-color: #f1f5f9;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #e0e7ff 0%, #f1f5f9 70%);
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(0, 0, 0, 0.08);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --accent-dem: #2563eb;
+      --accent-gop: #dc2626;
+      --accent-tossup: #d97706;
+      --glow-dem: rgba(37, 99, 235, 0.15);
+      --glow-gop: rgba(220, 38, 38, 0.15);
+      --badge-bg: #e0e7ff;
+      --badge-text: #3730a3;
+      --header-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg-color);
+      background-image: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 32px 20px;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    /* Top Navigation Bar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .brand svg {
+      width: 32px;
+      height: 32px;
+      fill: var(--accent-dem);
+    }
+
+    .theme-toggle-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+    }
+
+    .theme-toggle-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Hero Banner */
+    .hero {
+      text-align: center;
+      margin-bottom: 32px;
+      position: relative;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-dem);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-dem);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--text-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Custom Capitol SVG Graphic */
+    .capitol-illustration {
+      width: 100%;
+      max-width: 280px;
+      height: auto;
+      margin: 20px auto 0;
+      display: block;
+      opacity: 0.85;
+    }
+
+    /* Election Switcher Tabs */
+    .view-switcher {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .tab-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      border-color: var(--badge-text);
+    }
+
+    .tab-btn.active {
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      border-color: var(--badge-text);
+      box-shadow: 0 4px 15px -3px var(--glow-dem);
+    }
+
+    /* Tab Content Display Toggle */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Metrics Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+    }
+
+    .stat-card.total::before { background: var(--text-muted); }
+    .stat-card.dem::before { background: var(--accent-dem); box-shadow: 0 0 12px var(--glow-dem); }
+    .stat-card.gop::before { background: var(--accent-gop); box-shadow: 0 0 12px var(--glow-gop); }
+    .stat-card.tossup::before { background: var(--accent-tossup); }
+
+    .stat-card h3 {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .stat-card .val {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .stat-card .sub-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Flourish Map & Chart Embed Wrapper */
+    .map-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--header-shadow);
+      margin-bottom: 32px;
+    }
+
+    .map-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .map-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .map-frame-wrapper {
+      width: 100%;
+      min-height: 580px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 12px;
+      overflow: visible;
+    }
+
+    .chart-frame-wrapper {
+      width: 100%;
+      min-height: 380px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 12px;
+      overflow: visible;
+    }
+
+    .flourish-embed {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Targets Section */
+    .battlegrounds-section {
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .bg-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px 24px;
+      text-align: center;
+    }
+
+    .state-name {
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.01em;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px 0;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    footer code {
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5"></path>
+          <path d="M2 12l10 5 10-5"></path>
+        </svg>
+        <span>Elections Tracker 2026</span>
+      </div>
+      <button class="theme-toggle-btn" id="themeToggle">
+        <span id="themeIcon">☀️</span>
+        <span id="themeText">Light Mode</span>
+      </button>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="hero">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span> Auto-Sync Active (60s)
+      </div>
+      <h1>2026 U.S. Interactive Elections</h1>
+      <p class="subtitle">
+        Real-time interactive projection maps tracking all Senate and Gubernatorial races up for vote.
+      </p>
+
+      <!-- Custom Capitol SVG Graphic -->
+      <svg class="capitol-illustration" viewBox="0 0 500 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M250 10 L250 30 M240 30 L260 30 M250 30 L220 60 L280 60 Z" stroke="var(--accent-dem)" stroke-width="3" fill="none"/>
+        <path d="M180 80 C180 50, 320 50, 320 80 Z" fill="var(--badge-bg)" stroke="var(--badge-text)" stroke-width="2"/>
+        <rect x="160" y="80" width="180" height="15" rx="2" fill="var(--card-border)"/>
+        <rect x="170" y="95" width="12" height="40" fill="var(--text-muted)" opacity="0.6"/>
+        <rect x="200" y="95" width="12" height="40" fill="var(--text-muted)" opacity="0.6"/>
+        <rect x="230" y="95" width="12" height="40" fill="var(--text-muted)" opacity="0.6"/>
+        <rect x="260" y="95" width="12" height="40" fill="var(--text-muted)" opacity="0.6"/>
+        <rect x="290" y="95" width="12" height="40" fill="var(--text-muted)" opacity="0.6"/>
+        <rect x="318" y="95" width="12" height="40" fill="var(--text-muted)" opacity="0.6"/>
+        <rect x="140" y="135" width="220" height="10" rx="2" fill="var(--text-main)" opacity="0.2"/>
+      </svg>
+    </header>
+
+    <!-- Election View Switcher Tabs -->
+    <div class="view-switcher">
+      <button class="tab-btn active" onclick="switchTab('senate')">
+        🏛️ U.S. Senate Races
+      </button>
+      <button class="tab-btn" onclick="switchTab('governor')">
+        🏛️ Gubernatorial Races
+      </button>
+    </div>
+
+    <!-- ================= SENATE TAB CONTENT ================= -->
+    <div id="senate-tab" class="tab-content active">
+      
+      <!-- Senate Statistics Overview -->
+      <div class="stats-grid">
+        <div class="stat-card total">
+          <h3>Total Seats Up</h3>
+          <div class="val">35</div>
+          <div class="sub-text">33 Regular + 2 Special</div>
+        </div>
+        <div class="stat-card dem">
+          <h3>Democratic Seats</h3>
+          <div class="val">13</div>
+          <div class="sub-text">Defending 13 Seats</div>
+        </div>
+        <div class="stat-card gop">
+          <h3>Republican Seats</h3>
+          <div class="val">22</div>
+          <div class="sub-text">Defending 22 Seats</div>
+        </div>
+        <div class="stat-card tossup">
+          <h3>Primary Target Races</h3>
+          <div class="val">8</div>
+          <div class="sub-text">Key Target States</div>
+        </div>
+      </div>
+
+      <!-- Senate Balance of Power Composition (Visualization 30788543) -->
+      <div class="map-card">
+        <div class="map-header">
+          <div class="map-title">Senate Balance of Power & Seat Breakdown</div>
+        </div>
+        <div class="chart-frame-wrapper">
+          <div class="flourish-embed" data-src="visualisation/30788543" id="flourish-container-senate-composition">
+            <script src="https://public.flourish.studio/resources/embed.js"></script>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Senate Flourish Map Embed (Visualization 30785723) -->
+      <div class="map-card">
+        <div class="map-header">
+          <div class="map-title">Interactive Senate Projection Map</div>
+        </div>
+        <div class="map-frame-wrapper">
+          <div class="flourish-embed flourish-map" data-src="visualisation/30785723" id="flourish-container-senate">
+            <script src="https://public.flourish.studio/resources/embed.js"></script>
+          </div>
+        </div>
+      </div>
+
+      <!-- Senate Target Races Section -->
+      <section class="battlegrounds-section">
+        <h2 class="section-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-tossup)" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+          </svg>
+          Competitive Senate Races
+        </h2>
+        <div class="bg-grid">
+          <div class="bg-card"><span class="state-name">Maine</span></div>
+          <div class="bg-card"><span class="state-name">Michigan</span></div>
+          <div class="bg-card"><span class="state-name">Ohio</span></div>
+          <div class="bg-card"><span class="state-name">Texas</span></div>
+          <div class="bg-card"><span class="state-name">Alaska</span></div>
+          <div class="bg-card"><span class="state-name">Iowa</span></div>
+          <div class="bg-card"><span class="state-name">Kansas</span></div>
+          <div class="bg-card"><span class="state-name">South Carolina</span></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ================= GOVERNOR TAB CONTENT ================= -->
+    <div id="governor-tab" class="tab-content">
+
+      <!-- Governor Statistics Overview -->
+      <div class="stats-grid">
+        <div class="stat-card total">
+          <h3>Total Contested / Tossup</h3>
+          <div class="val">36</div>
+          <div class="sub-text">36 States Contested</div>
+        </div>
+        <div class="stat-card dem">
+          <h3>Democrats</h3>
+          <div class="val">6</div>
+          <div class="sub-text">Solid / Projected Dem</div>
+        </div>
+        <div class="stat-card gop">
+          <h3>Republicans</h3>
+          <div class="val">8</div>
+          <div class="sub-text">Solid / Projected GOP</div>
+        </div>
+        <div class="stat-card tossup">
+          <h3>Tossup Seats</h3>
+          <div class="val">36</div>
+          <div class="sub-text">Tossup / Open Seats</div>
+        </div>
+      </div>
+
+      <!-- Main Governor Flourish Map Embed (Visualization 30788011) -->
+      <div class="map-card">
+        <div class="map-header">
+          <div class="map-title">Interactive Gubernatorial Projection Map</div>
+        </div>
+        <div class="map-frame-wrapper">
+          <div class="flourish-embed flourish-map" data-src="visualisation/30788011" id="flourish-container-gov">
+            <script src="https://public.flourish.studio/resources/embed.js"></script>
+          </div>
+        </div>
+      </div>
+
+      <!-- Governor Competitive Races Section -->
+      <section class="battlegrounds-section">
+        <h2 class="section-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-tossup)" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+          </svg>
+          Competitive Gubernatorial Races
+        </h2>
+        <div class="bg-grid">
+          <div class="bg-card"><span class="state-name">Arizona</span></div>
+          <div class="bg-card"><span class="state-name">Georgia</span></div>
+          <div class="bg-card"><span class="state-name">Kansas</span></div>
+          <div class="bg-card"><span class="state-name">Michigan</span></div>
+          <div class="bg-card"><span class="state-name">Wisconsin</span></div>
+          <div class="bg-card"><span class="state-name">Florida</span></div>
+          <div class="bg-card"><span class="state-name">Texas</span></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>Data synced live via Flourish IDs: Senate Composition <code>30788543</code> • Senate Map <code>30785723</code> • Governor Map <code>30788011</code></p>
+    </footer>
+
+  </div>
+
+  <!-- Interactivity Scripts -->
+  <script>
+    // Theme Switcher Logic
+    const toggleBtn = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+
+    toggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        themeIcon.textContent = '🌙';
+        themeText.textContent = 'Dark Mode';
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeIcon.textContent = '☀️';
+        themeText.textContent = 'Light Mode';
+      }
+    });
+
+    // Tab Switcher Logic
+    function switchTab(tabName) {
+      const tabs = document.querySelectorAll('.tab-content');
+      const buttons = document.querySelectorAll('.tab-btn');
+
+      tabs.forEach(tab => tab.classList.remove('active'));
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      if (tabName === 'senate') {
+        document.getElementById('senate-tab').classList.add('active');
+        buttons[0].classList.add('active');
+      } else {
+        document.getElementById('governor-tab').classList.add('active');
+        buttons[1].classList.add('active');
+      }
+      
+      if (window.Flourish && window.Flourish.load) {
+        window.Flourish.load();
+      }
+    }
+
+    // Auto-refresh visualizations periodically to pull published edits from Flourish Studio
+    setInterval(() => {
+      const iframes = document.querySelectorAll('.flourish-embed iframe');
+      iframes.forEach(iframe => {
+        iframe.src = iframe.src;
+      });
+    }, 60000);
+  </script>
+
+</body>
+</html>
